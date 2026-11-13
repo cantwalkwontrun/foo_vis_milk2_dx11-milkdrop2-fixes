@@ -1,0 +1,52 @@
+MILKDROP HELP
+
+PLAYBACK
+Z Previous track
+X Play
+C Play/Pause
+Space Pause
+V Stop
+B Next track
+Up/Down Volume
+Left/Right Seek 5s
+Shift+Left/Right 30s
+U / Shift+U Shuffle
+P Playlist
+Mouse wheel Volume
+Single click Play/Pause
+
+MESSAGES / SPRITES
+T Song title animation
+Y Custom message mode
+K Sprite mode
+Ctrl+T/Y Clear text
+Ctrl+K Kill all sprites
+Del Newest sprite
+Shift+Del Oldest
+---RIGHT---
+VISUALS
+Alt+Enter Fullscreen
+Double-click Fullscreen
+Esc Help/fullscreen off
+H Hard cut next preset
+Backspace Previous preset
+R Random/sequential
+L Load preset
+Scroll Lock Lock preset
++/- Rate preset
+F2 Song title
+F3 Song time
+F4 Preset name
+F5 FPS
+F6 Rating
+F8 Change preset dir
+F9 Shader help
+
+PRESET TWEAKS
+I Zoom in/out
+W Waveform next/prev
+J Waveform size
+E Wave opacity
+G Gamma
+Q Echo zoom (MD1)
+F Echo flip (MD1)

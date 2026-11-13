@@ -1,0 +1,600 @@
+---
+lang: en-GB
+---
+
+# MilkDrop 2 Visualization Library Notes
+
+## Release History
+### Unreleased
+
+- Recover clear missing EEL statement separators after normal compilation fails, across preset, custom wave and shape expressions; retain ambiguous syntax errors and original preset files.
+- Add a bounded, cached `sound(first,last)` compatibility extension without reserving a variable named `sound`. Interpret the undocumented ranges as integrated FFT energy in 10-Hz coordinates; historical API and artistic parity remain unverified.
+- Recover malformed empty HLSL result selectors such as `GetPixel(uv).)` during compilation, retaining valid swizzles, comments and stored preset files; retry older automatic failure records after the compatibility update.
+- Recheck frame deadlines after scheduler wake signals instead of posting early render messages; avoid a wake/reject loop that can monopolise the host's UI queue.
+- Keep at most one queued or executing frame and reject stale frame messages after timer resets, while allowing animation to continue through the context menu's nested message loop.
+- Reuse Foobar's shared now-playing artwork cache and load custom artwork files off the UI thread; coalesce track changes and reject stale or oversized artwork without retaining destroyed views.
+- Fetch only the requested playlist row for title overlays, retrieve selection state in bulk, and record slow track/title/artwork operations locally without logging track details.
+- Keep queued title and artwork application inside the render exception handler so a failed resource update cannot bypass render-lock cleanup.
+- Decode legacy 24-bit DDS and TGA textures through a bounded DirectXTex fallback when the existing loader fails, retaining authored mipmaps and original files.
+- Bound nested EEL while loops with a shared allowance; reduce pathological per-frame while work after a measured CPU stall, retaining independent sequential loops and normal initialisation.
+- Preserve constant square roots in global shader initialisers; translate writable legacy booleans, compound Boolean masks and the observed vector-aspect initialiser without changing source files.
+- Ignore recognised legacy author/END footers and isolated stray dots before shader closing braces during compilation, preserving stored preset text and valid trailing helpers.
+- Preserve intrinsic calls in legacy `max`/`dot` local initialisers and resolve mixed-width vector powers without ambiguous compatibility overloads.
+- Translate an observed legacy local `line` binding that conflicts with modern HLSL's primitive keyword, leaving source files and unrelated bindings intact.
+- Retain the actual compiler error when warning floods exceed the diagnostic limit, and retry disposable failure records from older compatibility revisions.
+- Read long imported blacklist entries into correctly sized strings, and update selector row heights after font/DPI changes.
+- Allow contrast recovery to re-arm independently after restoring original rendering; analyse bypassed output with its actual neutral curve.
+- Report failed render-lock callbacks as incomplete so existing retry paths remain active.
+- Keep legacy CPU music bands at their reference frequencies across PCM sample rates, preserving raw FFT/PRO processing and guarding empty bands.
+- Stop completed extrema scans early while retaining full diagnostic histograms and independent contrast sampling; correct the 8 MB image-cache label.
+- Keep selected text readable across all dialog lists and dropdowns using paired foreground/background colours, including unfocused selections and Windows high-contrast colours.
+- Detect unrecognised dim shader presets from persistent dark, coherent moving detail, with highlight/sparse/static/grain safeguards and a gentler automatic display correction. Respect remembered off choices and restore neutral output as scenes brighten or settle.
+- Restored dormant authored waves only for measured black feedback with no active drawing source and feedback-dependent shaders; independent dim procedural effects remain unchanged.
+- Guarded zero q-controlled rotation matrices during recovery, retaining the authored warp/composite with usable coordinates and bounded feedback decay.
+- Automatically lift confirmed low-contrast preset contents before output quantisation after measured dark-detail evidence; unrelated preset contents retain their original contrast.
+- Remember automatic contrast choices by imported content hash across reloads and renamed copies, with separate enable/disable overrides.
+- Avoid contrast oscillation by analysing reconstructed original brightness, using hysteresis and a gradual correction ramp. Restore original output during brighter scenes.
+- Replaced non-finite mesh UVs from singular preset equations with the original screen coordinates.
+- Restored the built-in transform buffer after custom vertex shaders, recovering custom waves and the paused/stopped oscilloscope.
+- Limited automatic recovery to sustained uniform black or white output, preserving legitimate thin and dim effects; retained stronger manual recovery.
+- Preserved working warp/feedback when manually bypassing a failed composite, with an independent final fallback available.
+- Corrected shader-body wrapping around trailing helpers and structural macros, zero-base positive powers, corrupt bytecode-cache recovery, and texture registers above t15.
+- Bounded custom-shape instance counts and invalid geometry, cached blend states, and cleared shader-resource bindings in one call.
+- Preserved renderer ownership across fullscreen handoffs, refused independent duplicate views, and stopped pacing hidden, minimised or suspended views.
+- Accumulated fractional mouse-wheel deltas rather than amplifying each packet into a volume step.
+- Preserved active preset state after unreadable imports and separated automatic failure records by full path, file metadata and compatibility revision.
+- Added a processed 512-bin PRO spectrum texture and `get_fft` / `get_fft_hz` shader helpers, with preset attack/decay controls and DX11 resource lifecycle handling.
+- Calibrated shader Hz lookup to the actual PCM rate and reset spectrum history on format changes.
+- Preserved sparse-preset waveform defaults and unrecognised texture filename prefixes; guarded oversized reflected resource names.
+- Bound shader constant buffers at their declared registers and cleared stale slots.
+- Balanced resize/window-swap resource ownership, preserved no-op resize state, and released the prior FFT vector when reopening a view.
+- Removed a scheduler flag data race and initialised current-track artwork when opening the visualisation mid-track.
+- Fetch a fixed recent PCM window at the stream sample rate instead of a render-frame-sized chunk, preventing FPS-dependent zero padding and repeated-timestamp audio dropouts.
+- Extended preset q variables to q1–q64 across initialisation, per-frame, per-pixel, custom-wave and custom-shape contexts and shader uploads.
+- Added support for 16 custom waves and 16 custom shapes, including import, export and editing.
+- Added shader mouse aliases with live-checked common coordinates and a tested dotted-EEL mouse extension. The reference executable rejects the CPU fixtures; EEL execution parity and live release-pulse timing are not established.
+- Preserved the legacy compiler's global binding for the observed `aspect` and `ret1` shadow initialisers without editing preset files.
+- Matched legacy single-precision `double` scalar/vector declarations on shader-model-4 pixel paths while preserving shader-model-5 precision.
+- Translated the observed local `point` binding for shader-model-4 pixel compilation without changing unrelated identifiers or stored preset text.
+- Compiled legacy preset pixel shaders using native shader model 4 on capable DX11 devices, avoiding level-9 instruction limits and translation failures.
+- Restricted compiler density heuristics to legacy profiles while retaining shader source size limits.
+- Added bounded runtime recovery for sustained, measured uniform black or white output during audio playback. Recovery tries an authored drawing source before a feedback/composite fallback and never edits preset files or adds hidden selections.
+- Added context-menu recovery and restoration for visible presets whose appearance cannot be classified automatically; recovery is independent of preset filenames and locations.
+- Made the strongest recovery bypass collapsed warp shaders and invalid per-pixel UVs as well as the composite, using fading feedback for its independent audio waveform.
+- Allowed explicit file selection to inspect a hidden preset while retaining its exclusion from automatic rotation.
+- Read final output asynchronously before title overlays; unavailable GPU readback, silence, transitions and preset editing do not trigger recovery.
+- Validated custom-wave sample counts, separation and non-finite values before reading audio buffers or submitting geometry.
+- Corrected rotation-matrix packing and preserved shader-declared constant initialisers during creation and updates.
+- Continued binding other shader textures and constants after a missing texture, and stopped texture extension lookup after a successful load.
+- Identified incoming presets correctly in shader diagnostics and removed duplicate fallback strikes during staged preset application.
+- Corrected stereo and multichannel waveform frame counts and paused playback status.
+- Fixed preset-editor clipboard ownership, memory handling, long paste conversion, and repeated Delete bounds. Failed clipboard writes now preserve text during Cut.
+- Preserved independent expression VMs during partial preset imports and shader locks; initialisation now uses the destination state and resets saved expression values.
+- Cancelled superseded staged preset loads and kept current-preset file actions tied to the loaded file when browsing other folders.
+- Corrected parsing of long preset values and byte `0xFF`, relative preset names, case-insensitive preset extensions, and cancelled scan cleanup.
+- Preserved unchanged shader constants during buffer uploads and independent sprite expression contexts when sharing textures.
+- Refreshed cached text layouts after container resizing and shared font changes.
+- Sized the first blur pass from its feedback texture rather than the window, keeping blur sampling consistent when their dimensions differ.
+- Cleared stale artwork for missing covers and handled artwork extraction failures without terminating the host.
+- Stopped 3-D text rendering after failed buffer mapping, guarded failed geometry creation, and made SDK checksum failures stop CI.
+
+### 0.2.1.46 - 2026-06-15
+
+Visual fallback and preset safety update.
+
+- Automatically records visually inactive presets, adds them to the blacklist, and loads a replacement random preset without manual intervention.
+- Treats visual-inactive runtime safety entries as one-strike skips so known black, static, or non-responsive presets are excluded on future preset scans.
+- Hardened blacklist and profile script writes with atomic replacement and safer script invocation from the preferences UI.
+- Fixed installer packaging to embed the versioned component package instead of a stale generic package file.
+
+### 0.2.1.45 - 2026-06-09
+
+Threading stability update.
+
+- Replaced preset list worker thread state tracking with atomic variables to avoid data races between UI and worker thread.
+- Hardened preset scan cancellation and shutdown handling with atomic stores/loads to reduce race-related hangs/crashes.
+- Kept existing scan lifecycle behaviour, only changing synchronisation semantics.
+
+### 0.2.1.41 - 2026-06-09
+
+Clipboard and preset-scan stability fixes.
+
+- Hardened clipboard read/write helpers against missing formats, null clipboard handles, and clipboard lock failures.
+- Guarded paste and copy paths to avoid crashes when paste data is unavailable or malformed.
+- Fixed clipboard byte-size allocation for ANSI text writes and removed brittle `assert` gating in preset scan thread completion.
+
+### 0.2.1.39 - 2026-06-08
+
+Click play/pause overlay animation update.
+
+- Changed click-to-play, click-to-resume, click-to-pause, and `Paused` overlays to use the same title-style animation rules as track titles.
+- Reused the existing non-repeating intro/outro transition selection so click overlays do not keep reusing the same effect.
+- Applied the same readable pastel colour and preset-aware title blending rules to click playback overlays.
+- Kept legacy custom messages on their existing custom-message render path.
+
+### 0.2.1.38 - 2026-06-08
+
+Render stability hotfix.
+
+- Stopped non-indexed and indexed draws when dynamic vertex or index buffer updates fail, avoiding stale GPU buffer reuse during device pressure or reset churn.
+- Guarded fixed-function pixel-shader rebinding when the Direct3D context is unavailable.
+- Clamped invalid song-title, status-text, and custom-message duration/fade values before render-time divisions.
+- Clamped malformed preset `fWarpScale` values before CPU warp division so bad presets cannot feed non-finite warp coordinates into rendering.
+- Rejected non-finite Direct2D text fade timers.
+
+### 0.2.1.37 - 2026-06-08
+
+Natural title animation and shader-hardening update.
+
+- Expanded centred track-title transitions with separate non-repeating entrance and exit styles, including fades, slides, wipes, bounces, ripples, folds, spirals, page-turns, and soft preset-aware motion.
+- Added occasional readable pastel title colours, with subtle preset palette tinting and a stronger colour merge during fade-out.
+- Changed track-title fade-outs to merge more naturally with the active preset by using smoother easing, layered low-amplitude flow, restrained texture drift, and preset rotation/warp/wave cues.
+- Hardened DX11 fixed-function text and shape rendering paths so vertex-colour rendering, textured shapes, and custom pixel-shader state do not leak into each other.
+- Added safer shader compilation behaviour for legacy math-heavy presets, including compatibility wrappers, shader debug logging, bytecode cache reuse, and fallback tracking for risky shaders.
+- Fixed blur-range clamping and blur source sizing edge cases that could produce invalid sampling ranges or zero-sized blur sources.
+
+### 0.2.1.36 - 2026-06-07
+
+MilkDrop3-inspired preset navigation, transition, and crash-hardening update.
+
+- Changed random automatic preset selection to avoid recently played presets where enough non-recent candidates are available.
+- Added substring search to the in-visualisation preset load menu, including numeric/punctuation filename search and Backspace editing.
+- Added four additional soft-transition alpha patterns: corner wipe, checkerboard patches, spiral wipe, and Venetian blind wipe.
+- Updated enabled hard cuts to combine broad loudness, bass beat, and treble beat checks with a one-second cooldown.
+- Added sprite `blendmode` values `5` multiply and `6` screen while preserving existing modes `0` through `4`.
+- Hardened preset load and mashup keyboard handling against empty, stale, or out-of-range preset-list selections.
+- Fixed a mashup preset-list text-element overrun that could corrupt UI state when browsing larger preset collections.
+- Synced the highlighted preset-list row after current-preset changes so adjacent navigation and display state stay aligned.
+- Added a fade-and-drift exit animation for track title overlays so they no longer vanish abruptly at the end of the title animation.
+
+### 0.2.1.35 - 2026-06-06
+
+Runtime cache and VS2026 toolchain release for the foobar2000 x64 component.
+
+- Retargeted tracked project files from the Visual Studio 2022 `v143` toolset to the Visual Studio 2026 `v145` toolset.
+- Added a persistent shader bytecode cache under `<foobar2000 profile folder>\milkdrop2\shader-cache` to avoid recompiling unchanged preset shaders on repeat loads.
+- Added a persistent preset scan cache under `<foobar2000 profile folder>\milkdrop2\preset-scan-cache.txt` to reduce repeat directory scan overhead for unchanged preset files.
+- Hardened runtime safety tracking so presets are only skipped from automatic rotation after repeated slow-load or shader-fallback evidence.
+- Added reset support for runtime safety tracking via `reset-runtime-safety-cache.txt`.
+- Documented the Se7enSlasher/Incubo_ third-party preset collection from the Winamp forum thread.
+
+### 0.2.1.34 - 2026-05-17
+
+Help overlay and input cleanup release for the foobar2000 x64 component.
+
+- Restored the F1 help overlay to a stable two-column layout with explicit column splitting and line-ending normalization.
+- Updated the help text to match current keyboard and mouse behaviour, including double-click fullscreen, `H` hard cut, `Space` playback pause/play, and preset navigation controls.
+- Changed `Space` in normal visualization mode to use foobar2000 play/pause while preserving `Space` and Enter selection in the preset loader.
+- Fixed keyboard-opened context menus so they appear at a valid panel position instead of `(-1, -1)`.
+- Cleared stale waveform buffers whenever foobar2000 does not provide valid visualization audio data.
+- Made single-click playback control start playback when stopped instead of only toggling pause.
+
+### 0.2.1.33 - 2026-05-17
+
+Preset load transition polish for the foobar2000 x64 component.
+
+- Changed manual `Load Preset...` loads to use the configured user preset blend time instead of hard-cutting.
+- Changed blacklist replacement preset loads to use the configured user preset blend time after `Never Show Again`.
+- Kept the recent experimental preset/shader diagnostics out of this release so the live DX11 build stays on the stable rendering path.
+
+### 0.2.1.32 - 2026-05-15
+
+Fullscreen and pop-out cursor polish for the foobar2000 x64 component.
+
+- Added cursor auto-hide after three seconds of no mouse movement while MilkDrop is fullscreen or running in a pop-out window.
+- Restored the cursor immediately on mouse movement, clicks, focus return, or when returning to the embedded panel.
+- Kept normal embedded-panel rendering unchanged so the cursor remains visible during ordinary foobar2000 layout use.
+
+### 0.2.1.31 - 2026-05-13
+
+Manual preset loading update for the foobar2000 x64 component.
+
+- Added a right-click `Load Preset...` command to open a `.milk` preset picker directly from the MilkDrop panel.
+- Starts the picker from the current preset/preset directory, loads the selected preset immediately, and syncs the internal preset-list position so adjacent navigation continues from the loaded file.
+- Validated against the live DX11 install with manually selected presets, including `md-101151.milk`.
+
+### 0.2.1.30 - 2026-05-12
+
+Preset navigation update for the foobar2000 x64 component.
+
+- Changed right-click `Next Preset` and `Previous Preset` to move through presets in numeric filename order instead of choosing another random preset.
+- Kept `Random Preset` as the dedicated random selection command and renamed the context menu item from `Shuffle Preset` to `Random Preset`.
+- Preserved blacklist filtering during adjacent preset navigation so blacklisted presets are still skipped.
+
+### 0.2.1.29 - 2026-05-12
+
+Fullscreen pop-out menu polish for the foobar2000 x64 component.
+
+- Greyed out `Pop Out Window` while the embedded MilkDrop panel is already in normal fullscreen mode, avoiding an ambiguous window ownership path.
+- Kept `Return to Panel` available when an existing pop-out window is in fullscreen, so detached MilkDrop windows can still be restored directly from the context menu.
+- Updated component metadata links to the current DX11 maintenance repository.
+
+### 0.2.1.28 - 2026-05-12
+
+Pop-out window update for the foobar2000 x64 component.
+
+- Added a right-click `Pop Out Window` command so MilkDrop can move out of the embedded Default UI panel into its own window.
+- Added `Return to Panel` handling so closing the pop-out or using the context menu restores MilkDrop to the original embedded panel.
+- Added a `Borderless pop-out window` preference for users who want a clean detached visualiser surface without a normal window frame.
+- Added borderless pop-out dragging and edge resizing, including top-band drag support and hold-left-click drag from the visual area.
+- Kept double-click fullscreen and `Alt+Enter` fullscreen behavior working from the pop-out window.
+- Preserved the embedded panel while popped out and restored it cleanly when the pop-out closes.
+
+### 0.2.1.27 - 2026-05-11
+
+Frame pacing, fullscreen restore, and preferences parity update for the foobar2000 x64 component.
+
+- Replaced the old `Unlimited` max-frame-rate option with standard monitor-rate caps: 30, 60, 75, 120, 144, and 240 FPS.
+- Moved embedded and fullscreen frame pacing under the foobar2000 wrapper so both modes honour the configured cap without MilkDrop's legacy sleep limiter double-throttling either path.
+- Changed Direct3D presentation to avoid DXGI vsync blocking so high caps such as 120, 144, and 240 FPS can be reached when the system can sustain them.
+- Restored stable fullscreen/window transitions after resizing and fullscreen toggles, including automatic embedded-panel restoration after leaving fullscreen.
+- Added dark-mode-compatible scrolling to the MilkDrop preferences page and reworked the layout so the expanded settings fit cleanly.
+- Added preference buttons for opening the MilkDrop profile folder and textures folder.
+- Updated the help overlay and stopped-state oscilloscope presentation to match the current shortcut and idle behaviour more closely.
+
+### 0.2.1.26 - 2026-05-02
+
+Preset blacklist workflow and stability update for the foobar2000 x64 component.
+
+- Added extended selection to the preset blacklist dialog so Shift-click selects ranges and Ctrl-click toggles individual rows.
+- Updated blacklist removal to delete every selected entry in one action.
+- Added multi-select support to the blacklist file picker when adding presets from disk.
+- Added a conservative pixel-shader complexity guard so unusually large upgraded custom shader blocks fall back before entering the Direct3D compiler path.
+- Added repaired preset additions for presets that previously triggered freezes.
+- Vendored the recommended preset and texture pack archives into `third_party/milkdrop-resources` and updated the resource installer to use those local archives by default.
+- Added a self-extracting installer build script that packages the x64 component, shader data, vendored resources, and repaired preset additions into one `.exe`.
+- Updated the bundle installer to stop and open the official foobar2000 download page when foobar2000 x64 is not installed.
+
+### 0.2.1.25 - 2026-05-01
+
+Spacebar focus containment fix for the foobar2000 x64 component.
+
+- Stopped registering `Space` as a Win32 hotkey so MilkDrop no longer captures the key while another window is focused.
+- Kept the focused visualisation `Space` shortcut path intact so pressing `Space` inside MilkDrop still hard-cuts to the next preset.
+
+### 0.2.1.24 - 2026-04-24
+
+Format-info builder update for the foobar2000 x64 component.
+
+- Reworked the `Format Info...` dialog into a small builder that can load example layouts, append common title-format tokens from a dropdown, insert a newline token, and write the built result directly back into the title or artwork format field.
+- Expanded the builder dropdown with practical metadata and technical fields including date, track/disc numbers, genre, duration, codec, bitrate, sample rate, bit depth, channels, file name, and file path.
+- Renamed the builder `Add CRLF` action to `Newline` so the control matches what users are trying to do rather than the underlying foobar2000 token name.
+- Fixed lower-left F2 title metadata rendering so multiline title/artist/album layouts anchor to the bottom edge and grow upward instead of running off-screen.
+- Fixed F3 elapsed/length placement so the time block stays spaced above the full F2 multiline metadata block in embedded and fullscreen views.
+- Fixed live font refresh for all fonts managed by the `Select Fonts` dialog so changes to face, size, bold, italic, and outline settings apply to the running overlay text without requiring stale DirectWrite font objects to be recreated later.
+- Fixed the `Animated Song Titles` font path so centered title and click-status text now honor the configured size, weight, style, and live updates from the font dialog.
+- Updated the `Select Fonts` dialog to push saved font changes into the running MilkDrop instance immediately instead of waiting for a later config refresh.
+- Added an optional separate `Click Prompts` font slot plus a `Use separate click prompt font` preference so click-to-play/pause confirmations can have their own face and size while still using the centered animated-text behavior.
+- Migrated saved font settings when the new click-prompt font slot was added so existing `Animated Song Titles` choices are preserved instead of falling back to defaults.
+- Fixed saved font sizes in the `Select Fonts` dialog so they persist correctly after the new click-prompt font slot migration instead of reopening at stale default values such as `18`.
+- Rebalanced centered title sizing so the primary track-title animation renders larger than auxiliary click/status prompts in the active texture-based title path.
+- Fixed centered click/play/pause status text so font-slot sizes now use the selected font's real point size instead of the old custom-message relative-size math.
+- Kept legacy `milk_msg.ini` custom-message sizing behavior separate from font-slot status text so click prompts can scale correctly without changing existing message scripts.
+- Split preset expression recompilation into staged load steps so rare heavy presets are less likely to hitch when they first load.
+- Reduced preset-list scan overhead by hashing the blacklist lookup, scanning a larger preset header up front, and avoiding more slow fallback INI reads during directory walks.
+- Applied advanced-preferences updates to the live runtime path instead of leaving them as restart-only changes.
+- Reused `_SUPERTEXT` device resources across frames so centered title/status animations stop recreating D3D state every render.
+- Guarded immediate and staged preset loading so failed preset imports no longer continue through partially initialized state.
+- Hardened preset-list scan waiting and handle cleanup so failed worker creation and finished background scans leave less stale thread state behind.
+- Safeguarded waveform ingest against zero-channel chunks, empty audio buffers, and short buffers that previously left stale samples in the tail of the waveform arrays.
+- Fixed playlist overlay row spacing so rendered lines use measured font height and stop collapsing into each other with taller fonts.
+- Fixed the playlist overlay to keep using its measured row advance between frames instead of dropping back to a smaller fallback height that could reintroduce overlap.
+- Changed playlist rows to use a dedicated one-line `artist - title` display path and flatten embedded newlines so each playlist item renders as a single row instead of stacking multiline title-format output.
+- Expanded playlist row width calculations to account for outlined text and the longer one-line labels so the overlay can grow wider before clipping.
+- Moved the help overlay back to the top-right anchor and reserved the upper-right layout cursor for it so help and playlist can stay visible together without overlapping.
+- Fixed shader-upgrade prompts and resources for pixel shader 3.0, 4.0, and 5.0 upgrade paths, including the highest-supported-shader message text.
+- Simplified the click-to-play, click-to-resume, and click-to-pause confirmation prompts by removing trailing question marks and using direct action wording.
+
+### 0.2.1.23 - 2026-04-23
+
+Format-info copyability follow-up for the foobar2000 x64 component.
+
+- Changed the `Format Info...` dialog body text blocks to read-only edit controls so users can select and copy the title-format examples, common fields, and artwork-format guidance.
+- Kept the bold section headers and tightened layout from `0.2.1.22` while making the dialog content more usable for copy/paste.
+- Refreshed the README notes for the current public package naming and format-info behavior.
+
+### 0.2.1.22 - 2026-04-23
+
+Format-info readability follow-up for the foobar2000 x64 component.
+
+- Tightened the `Format Info...` dialog spacing so the `Examples:` section sits closer to the introductory title-format text.
+- Rendered the `Title display format`, `Examples:`, `Common fields:`, and `Artwork display format` section headers in bold for faster scanning in the dark-mode dialog.
+- Refreshed the README notes for the title/artwork format fields and current public package naming.
+
+### 0.2.1.21 - 2026-04-23
+
+Title-format and preferences layout update for the foobar2000 x64 component.
+
+- Fixed song title formatting in the embedded visualizer panel so the configured title display format is compiled instead of always falling back to the default `%title%` pattern.
+- Reset the cached title-format script when MilkDrop preferences change, so edits to `%artist%`, `%album%`, `$crlf()`, and other foobar2000 title-format fields take effect without stale formatting.
+- Added a dark-mode-aware `Format Info...` dialog explaining title display and artwork display format usage.
+- Reworked the MilkDrop preferences layout to avoid clipped checkbox labels, place mouse playback controls with the other startup/playback options, and align the title/artwork format controls with the existing action buttons.
+- Stopped mirroring MilkDrop's upper-right status and warning overlay messages into the foobar2000 console in release builds, so routine preset scan and preset-script warnings no longer create desktop console log captures from this component.
+
+### 0.2.1.20 - 2026-04-22
+
+Crash-stability and shader-state correctness update for the foobar2000 x64 component.
+
+- Fixed unsafe shader state moves that copied or zeroed non-trivial shader parameter objects, which could corrupt the shader parameter registry or leak/release COM objects incorrectly during preset changes and fallback shader use.
+- Fixed shader recompilation cleanup so failed pixel/vertex shader creation releases bytecode and constant-table state instead of leaving stale objects behind.
+- Fixed preset and sprite code-line loading so oversized or missing lines stop cleanly without advancing past the destination buffer.
+- Fixed shader constant values for render target height, mip level height, and audio average channels.
+- Fixed playlist keyboard navigation and selection refresh paths so empty playlists and out-of-range indices are ignored instead of wrapping to invalid positions.
+- Fixed constant-table dirty tracking so `ApplyChanges()` reports whether a GPU constant buffer update actually occurred.
+
+### 0.2.1.19 - 2026-04-21
+
+FPS preference and fullscreen pacing update for the foobar2000 x64 component.
+
+- Fixed the max frame rate preference being restored as `0`/Unlimited at runtime even when the foobar2000 SQLite config still stored a capped value such as `60`.
+- Moved the FPS cap preference read path off the SDK `cfg_int` wrapper for this setting so stale legacy component configuration cannot override the modern config-store value in memory.
+- Kept embedded panel rendering paced by the foobar2000 UI timer using the configured cap.
+- Applied MilkDrop's internal fullscreen limiter only while the UI element is actually fullscreen, so fullscreen honours capped values without double-limiting embedded rendering.
+- Removed the temporary FPS diagnostic console logging used to verify the embedded/fullscreen cap behaviour.
+
+### 0.2.1.18 - 2026-04-20
+
+Timer, fullscreen click, and animated text scaling update for the foobar2000 x64 component.
+
+- Moved the default render timer to the Win32/UI-thread timer path to avoid worker-thread rendering into foobar, HWND, and Direct3D paths.
+- Fixed album-art metadata buffer handling and render buffer array cleanup.
+- Added click-to-pause confirmation after context-menu use or when the visualizer was not already focused.
+- Improved animated title and status text scaling and outline offsets across panel and fullscreen resolutions.
+
+### 0.2.1.17 - 2026-04-19
+
+Animated text outline and font settings update for the foobar2000 x64 component.
+
+- Added an `OL` option to the font settings dialog so each text type can enable or disable the black outline independently.
+- Kept animated song title outline behaviour tied to the `Animated Song` font row.
+- Improved the font settings dialog layout for the new outline column and explanatory help text.
+- Made animated title texture clearing and draw state more explicit so some presets do not show the title as a white rectangle.
+
+### 0.2.1.16 - 2026-04-19
+
+Preset blacklist import/export update for the foobar2000 x64 component.
+
+- Added `Import...` to the preset blacklist manager so a text file of preset filenames can be merged into the current blacklist.
+- Added `Export...` to save the current preset blacklist to a user-selected text file.
+- Kept imported entries normalized and de-duplicated so repeated filenames are ignored.
+
+### 0.2.1.15 - 2026-04-19
+
+Play/pause overlay reliability update for the foobar2000 x64 component.
+
+- Queued left-click play/pause animated text on the render tick so it is not skipped when the render lock is briefly busy.
+- Kept resume behavior showing the current track title animation.
+- Kept pause behavior showing the large animated `Paused` message.
+- Removed the extra `Click Again to Pause/Play` prompt so a single left click toggles playback directly.
+
+### 0.2.1.14 - 2026-04-17
+
+Small play/pause overlay behavior update for the foobar2000 x64 component.
+
+- Changed single-click play/pause overlay behavior so pausing explicitly shows `Paused`.
+- Changed resume behavior to relaunch the current song title animation instead of showing a separate `Playing` message.
+
+### 0.2.1.13 - 2026-04-17
+
+Blacklist usability and hang-avoidance follow-up for the foobar2000 x64 component.
+
+- Replaced indefinite UI-thread render-lock waits with a bounded wait so busy or wedged rendering cannot leave foobar permanently not responding.
+- Retried blacklist replacement preset loading when the render lock is temporarily busy, so `Never Show Again` is less likely to leave the current preset visible.
+- Updated the preset blacklist dialog for foobar dark mode.
+- Made the blacklist entry field clearer with a grey italic `example.milk` placeholder inside the box.
+- Allowed the blacklist Add action to use a typed or pasted preset filename/path, while still opening the preset file picker when the field is empty.
+- Some presets are still known to crash, hang, or remain black because of preset/shader/texture compatibility issues; the blacklist is intended to help filter those out as they are found.
+
+### 0.2.1.12 - 2026-04-17
+
+Crash-stability and overlay behavior follow-up for the foobar2000 x64 component.
+
+- Guarded album-art sprite replacement with the render lock to avoid racing the render thread during rapid track changes.
+- Kept explicit album-art menu changes on a blocking lock path while allowing automatic track-change artwork updates to skip safely if rendering is busy.
+- Added render-lock protection around left-click play/pause status text.
+- Prevented double-click fullscreen actions from also firing the delayed single-click play/pause action.
+- Restored `Playing` and `Paused` to the same large animated center text path used by track-title animations.
+- Prevented automatic track-title updates from immediately overwriting `Playing` and `Paused`, while keeping suppressed title changes pending so the new title can still animate afterward.
+- Kept blacklist replacement preset loading on a blocking render-lock path so `Never Show Again` reliably advances to a replacement preset.
+- Scoped the Space hard-cut hotkey to foobar activation so it works in MilkDrop without stealing Space from other Windows applications.
+
+### 0.2.1.11 - 2026-04-17
+
+Small UI cleanup release for the foobar2000 x64 component.
+
+- Removed the `Restore F-key overlay states on startup` preference and its persistence path.
+- Kept F-key/runtime overlays on their default startup state instead of restoring saved overlay state.
+- Changed the `F3` track-time overlay to display elapsed time as `m:ss` or `h:mm:ss`, matching the track length format without fractional seconds.
+
+### 0.2.1.10 - 2026-04-17
+
+Crash-stability and title-display hotfix for the foobar2000 x64 component.
+
+- Reduced render-thread lock contention by making most UI-triggered plugin operations skip when the render lock is busy, while keeping explicit user actions that must complete on a blocking path.
+- Reworked preset scanning and preset selection so the shared preset list is copied, sorted, and read under safer critical-section boundaries.
+- Fixed preset cleanup ordering so the preset update thread is cancelled before the shared critical section is destroyed.
+- Added guards around preset rating updates, text rendering, help text setup, and DirectWrite layout creation to avoid null-pointer crashes during shutdown, resize, or device transitions.
+- Fixed `Show Track Title` and the `T` shortcut so they refresh the current foobar track title before launching the center title animation.
+- Added a centered one-shot title fallback for cases where the title texture cannot be rendered, while suppressing the fallback when the normal large animated title succeeds.
+- Kept the `F2` lower-corner title overlay independent from the one-shot center title display.
+- Fixed `Never Show Again` so the replacement preset load waits for the render lock and reliably advances after the current preset is blacklisted.
+
+### 0.2.1.9 - 2026-04-16
+
+Help-overlay and stability follow-up for the foobar2000 x64 component.
+
+- Reworked the built-in help overlay to use a stable left-anchored two-column `key: action` layout.
+- Loaded the embedded help text by exact resource size to avoid stray trailing characters.
+- Restored direct `Space`, `F2`, and `F3` shortcut behaviour after the focus-hotkey changes.
+- Added crash diagnostics and minidump logging under the foobar2000 profile `milkdrop2\crashlogs` folder.
+- Added safer locking around runtime preset operations and safer random-preset dispatch from the blacklist manager.
+- Added a photosensitivity warning to the README.
+
+### 0.2.1.8 - 2026-04-15
+
+Blacklist and mouse-control usability release for the foobar2000 x64 component.
+
+- Added persistent preset blacklist support to the foobar context menu with `Never Show Again`.
+- Added a blacklist manager in preferences with direct file opening and preset-folder browsing for adding entries.
+- Fixed the blacklist manager lifetime/ownership issues that could crash or hang foobar when closing preferences.
+- Added a startup option to restore F-key overlay states, while keeping the default startup state reset for transient overlays.
+- Updated the built-in help overlay text/layout for the newer mouse controls and clearer playback shortcut guidance.
+- Refined single-click play/pause so the first click after focus regain or a context menu shows `Click Again for Play/Pause` instead of pausing immediately.
+- Improved fullscreen topmost handling so fullscreen mode reapplies window ordering more reliably.
+
+### 0.2.1.5 - 2026-04-14
+
+Hotfix release for song title rendering in the foobar2000 x64 component.
+
+- Scaled song titles down to the largest size that fits the title texture instead of relying on a fixed oversize render.
+- Kept `...` clipping as a last-resort fallback when a title is still too wide at the minimum allowed size.
+
+### 0.2.1.4 - 2026-04-14
+
+Follow-up hotfix release for wait-string rendering and cursor safety in the foobar2000 x64 component.
+
+- Fixed wide-text wait-string selection rendering writing the closing bracket into the wrong display buffer.
+- Fixed wait-string display helper loops that could underflow when the cursor or selection started at position 0.
+- Fixed code-mode cursor column calculation reading before the start of the edit buffer.
+
+### 0.2.1.3 - 2026-04-14
+
+Hotfix release for the foobar2000 x64 component focused on editor safety and album art persistence.
+
+- Fixed the foobar-side album art toggle so it now persists correctly across restart.
+- Fixed MilkDrop code-string writeback to use the correct destination capacity when accepting edits.
+- Reworked the wait-string editor to use explicit narrow code storage instead of aliasing preset code through a `wchar_t` buffer.
+- Kept the previous startup-state consistency fixes, including the runtime-only handling for transient preset lock and overlay state.
+
+### 0.2.1.2 - 2026-04-14
+
+Follow-up hotfix release for state and preference consistency in the foobar2000 x64 component.
+
+- Stopped code-driven preset lock state from being serialized as if it were a user preference.
+- Removed the remaining foobar-side read path for legacy INI-backed song title and song time overlay state.
+- Reduced the chance of stale runtime state reappearing across restarts or UI state changes.
+
+### 0.2.1.1 - 2026-04-14
+
+Small hotfix release for the independent x64 maintenance branch.
+
+- Stopped song title and song time overlays from appearing on startup.
+- Kept `F2` / `F3` as runtime-only toggles instead of persisted startup state.
+- Fixed the local Visual Studio project reference for the foobar2000 component client so the x64 build works from the current repo layout.
+
+### 0.2.1.0 - 2026-04-13
+
+First public standalone release from the independent maintenance repository.
+
+- Added a public x64 GitHub release package for foobar2000 v2 x64.
+- Updated component metadata and embedded project URLs to point to `Ci303/foobar2000-milkdrop2-fixes`.
+- Documented current fixes, installation steps, runtime paths, and release usage in the README.
+- Includes the recent maintenance fixes already merged into this repository:
+  - settings UI cleanup and dark mode fixes
+  - font dialog and album art fixes
+  - keyboard shortcut fixes and help overlay alignment
+  - song time display stabilisation
+  - fullscreen, resize, and settings-apply stability fixes
+  - remembered-preset startup handling improvements
+
+## Current foobar2000 Component Status
+
+In order to complete the port from Winamp some functionality has been removed, lost, or modified:
+
+- Processes single-precision floating-point audio samples instead of 8-bit [modified].
+- Title and custom messages and textures [modified, still use INI files].
+- Customization saved in INI file [removed, moved to foobar2000 preferences].
+- Older presets may not fully work [changed EEL and upgraded Shader Model to 4.0].
+- Desktop mode [removed].
+- Fake fullscreen mode and dual header functionality [removed].
+- VJ mode [removed].
+
+## MilkDrop 2 Library Notes
+
+Prerequisites to build `vis_milk2.dll`:
+
+- [Winamp 5.55 SDK](http://forums.winamp.com/showthread.php?t=252090): the files required to build the DLL are included in this repository.
+- [NS-EEL2 Library](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
+- [DirectXTK Library](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are imported via the NuGet package manager.
+
+Breaking changes, relative to version 2.25c:
+
+- The shader files in the `Winamp\Plugins\Milkdrop2\data` have been updated to match the DirectX 11 data layout.
+- The [Legacy DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812) is no longer required to build due the update to DirectX 11 (see [Where is the DirectX SDK (2021 Edition)?](https://walbourn.github.io/where-is-the-directx-sdk-2021-edition/)).
+- The minimum OS version supported is Windows 7. Consequently, the [DirectX End-User Runtime](https://www.microsoft.com/en-us/download/details.aspx?id=8109) installation is not required as it is included as a core component of the OS.
+- Removed system callback API, which was mainly used to open websites in the internal browser.
+- NS-EEL2 is _not_ built in EEL1 compatibility mode. So presets that use that syntax will not compile. Refer to the [WDL documentation](https://www.cockos.com/EEL2/) for syntax. Known EEL1 functions that have alternate EEL2 syntax or were deprecated are:
+  `assign`, `if`, `equal`, `below`, `above`, `bnot`, `megabuf`, `gmegabuf`, `sigmoid`, `band`, `bor`
+  <br />Example of preset change to work in EEL2:
+
+```c
+per_frame_22=vx2 = if(above(x2,0),vx2,abs(vx2)*0.5);
+```
+
+Should be:
+
+```c
+per_frame_22=vx2 = x2 > 0 ? vx2 : abs(vx2) * 0.5;
+```
+
+## MilkDrop 2 Release Notes
+
+Open source release's `README.txt`:
+
+```text
+MilkDrop 2 development README
+
+Author:       Ryan Geiss
+Last updated: 18 May 2013
+
+GETTING STARTED
+
+To get started, either download the .zip file here (which contains a snapshot
+of the MilkDrop 2 source code on 5/13/13, the day it was open-sourced), or
+go to 'code' tab and execute the 'git clone' command given there to pull down
+the source.
+
+To build the Winamp / Windows version (which is the only build supported
+so far), you'll need Visual Studio [Visual C++] 2008 or later.  (The free
+'Express' editions of Visual Studio will work just fine, and they give you
+all the functionality.)
+
+Once it's installed, open Visual Studio and open the project
+"src/vis_milk2/milkdrop_DX9.sln".  Then select either the Debug or Release
+configuration, whichever you want.  Then build it.
+
+If it gets through the compile and link but then gives an error when
+trying to write the final binary (vis_milk2.dll) to disk, do the following:
+In the Solution Explorer, right click on the "vis_milk2" project and click
+Properties.  Then, under Configuration Properties, click on Linker.  To the
+right, the first item you'll see is "Output File", and it will be set to
+"$(ProgramFiles)\Winamp\plugins\vis_milk2.dll" (without the double quotes).
+You might have to change this to write the file to some "normal" directory,
+rather than the (proteted) Program Files directory.  Then, after building,
+you'll want to manually copy vis_milk2.dll to the Winamp\Plugins directory
+(and repeat this each time you build) (or maybe try starting Visual Studio
+as an Administrator, so it can just write the file to where you want it,
+in the first place).
+
+Once the .DLL under Program Files is updated, you can start Winamp.  Hit
+CTRL+K to select MilkDrop 2 as your visualizer; hit ALT+K to configure it
+(optional); or play some music and then click the 'visualization' tab to
+start it.  Double-click the visualization to go full-screen.
+
+You can attach the Visual Studio debugger to MilkDrop while it is running,
+as long as the DLL that's running matches the source code in Visual Studio.
+From within Visual Studio, just go to the Debug menu and select 'Attach
+to Process'.  Then find Winamp.exe and it should start.  You can then
+see debug output in the visual studio window, set breakpoints, move the
+instruction pointer around, look at variable values, and even
+modify code once a breakpoint is hit -- the compiler will recompile it
+on-the-fly and you'll just keep going.  (The Visual Studio debugger is
+absolutely mind-blowingly awesome.)
+
+You'll also need to have some preset files (*.milk) in
+$(ProgramFiles)\Winamp\Plugins\Milkdrop2\presets, but if you installed Winamp,
+then there will already be some there for you to play with.
+
+To learn how to alter or author new MilkDrop presets, see
+$(ProgramFiles)\Winamp\Plugins\Milkdrop2\docs\milkdrop_preset_authoring.html.
+```
