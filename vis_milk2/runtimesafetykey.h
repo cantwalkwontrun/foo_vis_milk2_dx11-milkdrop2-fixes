@@ -15,7 +15,7 @@
 namespace RuntimeSafetyKey
 {
 // Increment when compatibility/recovery changes warrant retrying old failures.
-inline constexpr unsigned CompatibilityRevision = 9;
+inline constexpr unsigned CompatibilityRevision = 10;
 
 inline std::wstring Prefix(unsigned revision)
 {

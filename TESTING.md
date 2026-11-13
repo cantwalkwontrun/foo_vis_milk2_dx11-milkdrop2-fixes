@@ -14,6 +14,22 @@ See [BUILDING](BUILDING.md) for a sample `foo_vis_milk2/foo_vis_milk2.vcxproj.us
 
 ## Unit Testing
 
+The isolated 0.2.1.69 DX11 candidate passed 185 native tests. Six added
+regressions cover INI keys with spaces/tabs before `=`, legacy space-separated
+values, intrinsic names used as variables alongside calls, extended variable
+identifiers, empty top-level statements, signed-number dot artefacts and numeric
+suffixes. Ambiguous missing maths and truncated expressions remain errors.
+
+Original-file tests recover 19 of the 42 expression-error contents remaining
+in v68. All 19 complete 300 WARP frames without expression warnings, shader
+fallback or non-finite mesh coordinates. All 72 previous recoveries retain
+their identical final image hashes in the same ordered regression run. Across
+all 114 expression-warning originals, 91 now execute without those errors and
+23 retain errors. Including the 12-frame screening and four before/after shader
+and thin/dim controls, these v69 checks cover 31,068 off-screen WARP frames.
+Original-file hashes, the installed v68 files and frozen v66 GPU inputs remain
+unchanged. Full-library v69 GPU testing and live artistic parity are unverified.
+
 The isolated 0.2.1.68 DX11 candidate passed 179 native tests. Separator recovery
 runs only after the unmodified expression fails to compile, at clear top-level
 assignment boundaries across source lines. Tests cover preset, wave and shape

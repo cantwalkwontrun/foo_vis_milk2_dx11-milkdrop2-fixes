@@ -2,35 +2,35 @@
 lang: en-GB
 ---
 
-# DX11 x64 v0.2.1.68
+# DX11 x64 v0.2.1.69
 
-This release includes the frame-pacing and context-menu stability fixes,
-asynchronous artwork handling, readable list selections, texture/shader
-compatibility improvements and bounded EEL recovery accumulated since v46.
+Follow-up to v68: recover 19 additional expression-error contents through plugin
+compatibility, without changing preset files. Of the 114 warning contents tested,
+91 now execute without expression errors; 23 still contain unresolved errors.
 
-Expression recovery restores 72 of the 114 tested expression-warning contents:
-65 using `sound()` and seven with clear missing statement separators. Normal
-compilation is attempted first; original preset files are never rewritten.
-Forty-two expression-error contents remain unresolved in this version.
+- Correct INI parsing of whitespace before `=`, including custom-shape code.
+- Keep intrinsic calls separate from same-named variables, and lower extended
+  variable identifiers for the projectM expression backend.
+- Retry failed compilation after removing empty top-level statements, isolated
+  dots before signed numeric operands and recognised numeric suffixes.
+- Preserve errors where repairing truncated or ambiguous maths would require
+  choosing missing operands or operators.
 
-Validation: 179 native tests, 26,736 off-screen before/after WARP frames and
-12 production-FFT tone cases. Protected thin/dim fixture images are unchanged.
-The full-library hardware GPU scan is separate, incomplete and uses frozen v66.
-This release does not claim a completed full-library v68 GPU pass.
+Validation: 185 native tests and 31,068 off-screen WARP frames. All 19 new
+recoveries complete 300 frames without expression warnings, fallback shaders or
+non-finite mesh coordinates. All 72 previous recoveries retain identical final
+image hashes in the same ordered test; protected thin/dim fixtures also match.
 
-The undocumented `sound(first,last)` compatibility function uses an inferred
-integral of FFT band magnitude in 10-Hz coordinates. Historical API and artistic
-parity are unverified. Compilation and finite rendering do not guarantee the
-intended appearance of every recovered preset. The alternate NS_EEL2 backend
-has not been tested.
+The full-library hardware GPU scan remains separate, incomplete and based on
+frozen v66. This release does not claim a full-library v69 GPU pass. Live artistic
+appearance is unverified. The v68 `sound()` extension still uses an inferred
+10-Hz band-integral interpretation; historical API parity is unverified.
+The alternate NS_EEL2 backend has not been tested.
 
-The release asset contains only the x64 component, shader includes and licences.
-Debug symbols, local settings, preset collections and diagnostic reports are
-excluded. Existing profiles and presets are retained by normal component
-installation. Close foobar2000 before replacing an installed DLL.
+This prerelease contains the x64 component, shaders and licences only. Existing
+profiles and presets are retained during normal installation. Close foobar2000
+before replacing its loaded component. Local profiles, test logs, preset
+collections, debug symbols and the earlier repository history are excluded.
 
-The source tree retains upstream attribution and licences. Build with Visual
-Studio C++ v145, the pinned foobar2000 SDK and projectM dependency used by the
-workflow, and the NuGet versions in packages.config. Apply external/pmeel.patch
-to the pinned projectM revision before building. Use tools/Test-Native.ps1 for
-native checks. Do not distribute local test output or debug symbols.
+The software source retains upstream licensing and attribution and includes
+the exact downstream expression-engine patch against the pinned dependency.

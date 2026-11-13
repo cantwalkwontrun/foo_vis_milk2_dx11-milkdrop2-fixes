@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdint>
+#include <charconv>
 
 namespace PresetEelCompat
 {
@@ -137,6 +138,79 @@ namespace PresetEelCompat
             result.append(source.substr(copied, position - copied)); result += ';'; copied = position;
         }
         result.append(source.substr(copied)); return result;
+    }
+
+    // The projectM scanner reserves every intrinsic name, including bare names
+    // used as variables. Keep calls and variables separate, and lower extended
+    // identifier bytes to deterministic ASCII names without altering stored text.
+    template<typename IsFunction>
+    inline std::string RewriteLegacyVariables(std::string_view source, IsFunction isFunction)
+    {
+        bool valid = false; const auto tokens = Syntax::Tokens(source, valid);
+        if (!valid) return std::string(source);
+        for (const auto& token : tokens)
+            if (token.identifier && Syntax::Equal(token.text, "function")) return std::string(source);
+        std::string result; size_t copied = 0;
+        for (size_t i = 0; i < tokens.size(); ++i)
+        {
+            const auto& token = tokens[i];
+            if (!token.identifier) continue;
+            const bool extended = std::any_of(token.text.begin(), token.text.end(), [](unsigned char c) { return c >= 128; });
+            const bool call = i + 1 < tokens.size() && tokens[i + 1].text == "(";
+            if (!extended && (call || !isFunction(std::string(token.text).c_str()))) continue;
+            // Unknown calls remain errors rather than being invented as functions.
+            if (call) continue;
+            result.append(source.substr(copied, token.begin - copied));
+            result += "__md2_legacy_var_";
+            constexpr char hex[] = "0123456789abcdef";
+            for (unsigned char c : token.text)
+            {
+                if (c >= 'A' && c <= 'Z') c += 'a' - 'A';
+                result += hex[c >> 4]; result += hex[c & 15];
+            }
+            copied = token.begin + token.text.size();
+        }
+        result.append(source.substr(copied)); return result;
+    }
+
+    // Failed-compilation fallback only: remove empty top-level statements, a
+    // standalone dot before a signed numeric operand, and recognised C floating
+    // suffixes. Never supply missing operators, operands or closing parentheses.
+    inline std::string RecoverLegacyExpressionSyntax(std::string_view source)
+    {
+        const auto separated = RecoverMissingStatementSeparators(source);
+        bool valid = false; const auto tokens = Syntax::Tokens(separated, valid);
+        if (!valid) return separated;
+        std::vector<size_t> removals;
+        int depth = 0; bool statementStart = true, operand = true;
+        for (size_t i = 0; i < tokens.size(); ++i)
+        {
+            const auto& token = tokens[i];
+            if ((token.identifier && Syntax::Equal(token.text, "function")) || token.text.front() == '"' || token.text.front() == '\'')
+                return separated;
+            if (!depth && token.text == ";" && statementStart) { removals.push_back(token.begin); continue; }
+            if (token.text == "." && operand && i + 2 < tokens.size() &&
+                (tokens[i + 1].text == "+" || tokens[i + 1].text == "-") &&
+                !tokens[i + 2].identifier && ((tokens[i + 2].text.front() >= '0' && tokens[i + 2].text.front() <= '9') ||
+                                            tokens[i + 2].text.front() == '.'))
+            { removals.push_back(token.begin); continue; }
+            if (!token.identifier && token.text.size() > 1 && std::string_view("fFlL").find(token.text.back()) != std::string_view::npos)
+            {
+                double value = 0; const char* end = token.text.data() + token.text.size() - 1;
+                const auto parsed = std::from_chars(token.text.data(), end, value);
+                if (parsed.ec == std::errc{} && parsed.ptr == end) removals.push_back(token.begin + token.text.size() - 1);
+            }
+            if (token.text == "(" || token.text == "[") ++depth;
+            if (token.text == ")" || token.text == "]") --depth;
+            if (depth < 0) return separated;
+            statementStart = !depth && token.text == ";";
+            operand = !(token.identifier || (token.text.front() >= '0' && token.text.front() <= '9') ||
+                        token.text.front() == '.' || token.text == ")" || token.text == "]");
+        }
+        if (depth || removals.empty()) return separated;
+        std::string result = separated;
+        for (auto it = removals.rbegin(); it != removals.rend(); ++it) result.erase(*it, 1);
+        return result;
     }
 
     // The EEL engine limits each loop separately. Nested non-terminating

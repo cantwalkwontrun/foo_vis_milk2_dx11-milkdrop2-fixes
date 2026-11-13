@@ -141,6 +141,48 @@ TEST_CLASS(QVariableTest)
     }
 
   public:
+    TEST_METHOD(SpacedIniSeparatorsImportWithoutLeakingEqualsIntoCode)
+    {
+        WritePresetFixture("spaced-keys.milk", "// language: en-GB\n[preset00]\nfDecay \t = 0.875\n"
+            "per_frame_init_1 \t= q1=3;\nper_frame_1\t= q2=q1+2;\n"
+            "shape_0_init1 = t1=4;\nshape_0_per_frame1 =x=t1;\n"
+            "wave_0_init1 =t1=5;\nwave_0_per_point1 =x=t1;\n");
+        Assert::IsTrue(m_state->Import((m_fixtureDirectory / "spaced-keys.milk").c_str(),0,nullptr));
+        Assert::AreEqual(0.875f,m_state->m_fDecay.eval(-1),1e-6f);
+        Assert::AreEqual(3.0,*m_state->var_pf_q[0],0.0);
+        Assert::IsNotNull(m_state->m_pf_codehandle);
+        Assert::IsNotNull(m_state->m_shape[0].m_pf_codehandle);
+        Assert::IsNotNull(m_state->m_wave[0].m_pp_codehandle);
+        Assert::IsTrue(std::string(m_state->m_shape[0].m_szPerFrame).find("=x=")==std::string::npos);
+        WritePresetFixture("legacy-space.milk", "[preset00]\nfDecay 0.625\nper_frame_init_1 q1=7;\n");
+        Assert::IsTrue(m_state->Import((m_fixtureDirectory / "legacy-space.milk").c_str(),0,nullptr));
+        Assert::AreEqual(0.625f,m_state->m_fDecay.eval(-1),1e-6f);
+        Assert::AreEqual(7.0,*m_state->var_pf_q[0],0.0);
+    }
+    TEST_METHOD(LegacyNumericRecoveryCompilesInPresetWaveAndShapeCode)
+    {
+        strcpy_s(m_state->m_szPerFrameInit,";q1=.-2.5; q2=.99L;");
+        strcpy_s(m_state->m_szPerFrameExpr,";q3=.+.25;");
+        strcpy_s(m_state->m_wave[0].m_szPerPoint,";x=.-.25;");
+        strcpy_s(m_state->m_shape[0].m_szPerFrame,";x=.-.5;");
+        m_state->RecompileExpressions();
+        Assert::AreEqual(-2.5,*m_state->var_pf_q[0],0.0);
+        Assert::AreEqual(.99,*m_state->var_pf_q[1],1e-12);
+        Assert::IsNotNull(m_state->m_pf_codehandle);
+        Assert::IsNotNull(m_state->m_wave[0].m_pp_codehandle);
+        Assert::IsNotNull(m_state->m_shape[0].m_pf_codehandle);
+        Assert::IsTrue(std::string(m_state->m_szPerFrameInit)==";q1=.-2.5; q2=.99L;");
+    }
+    TEST_METHOD(IntrinsicNamedAndExtendedVariablesPersistAcrossExpressionGroups)
+    {
+        strcpy_s(m_state->m_szPerFrameInit,"sin=4;\xc3\xa9=5;q1=sin+\xc3\xa9;");
+        strcpy_s(m_state->m_szPerFrameExpr,"q2=sin+\xc3\xa9+sin(0);");
+        m_state->RecompileExpressions();
+        Assert::AreEqual(9.0,*m_state->var_pf_q[0],0.0);
+        Assert::IsNotNull(m_state->m_pf_codehandle);
+        NSEEL_code_execute(m_state->m_pf_codehandle);
+        Assert::AreEqual(9.0,*m_state->var_pf_q[1],0.0);
+    }
     TEST_METHOD(MissingSeparatorsRecoverEveryExpressionGroupWithoutChangingText)
     {
         const char* init = "q1=1\1q2=2;";

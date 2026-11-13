@@ -1,8 +1,16 @@
 diff --git a/ns-eel2-shim/ns-eel.c b/ns-eel2-shim/ns-eel.c
-index 193b1b5..e14bbc7 100644
+index 193b1b5..1fad61f 100644
 --- a/ns-eel2-shim/ns-eel.c
 +++ b/ns-eel2-shim/ns-eel.c
-@@ -30,6 +30,12 @@ void NSEEL_VM_free(NSEEL_VMCTX ctx)
+@@ -4,6 +4,7 @@
+ #include "projectm-eval/CompilerTypes.h"
+ #include "projectm-eval/CompileContext.h"
+ #include "projectm-eval/TreeVariables.h"
++#include "projectm-eval/CompilerFunctions.h"
+ 
+ void projectm_eval_memory_host_lock_mutex()
+ {
+@@ -30,6 +31,17 @@ void NSEEL_VM_free(NSEEL_VMCTX ctx)
      projectm_eval_context_destroy((struct projectm_eval_context*) ctx);
  }
  
@@ -12,10 +20,15 @@ index 193b1b5..e14bbc7 100644
 +    return projectm_eval_context_register_function2((struct projectm_eval_context*)ctx, name, function, user);
 +}
 +
++int NSEEL_VM_isfunction(NSEEL_VMCTX ctx, const char* name)
++{
++    return ctx && name && prjm_eval_compiler_name_is_function((struct projectm_eval_context*)ctx, name);
++}
++
  void NSEEL_VM_resetvars(NSEEL_VMCTX ctx)
  {
      projectm_eval_context_reset_variables((struct projectm_eval_context*) ctx);
-@@ -58,7 +64,7 @@ void NSEEL_VM_FreeGRAM(void **ufd)
+@@ -58,7 +70,7 @@ void NSEEL_VM_FreeGRAM(void **ufd)
  
  NSEEL_CODEHANDLE NSEEL_code_compile(NSEEL_VMCTX ctx, char *code, int lineoffs)
  {
@@ -25,7 +38,7 @@ index 193b1b5..e14bbc7 100644
  }
  
 diff --git a/ns-eel2-shim/ns-eel.h b/ns-eel2-shim/ns-eel.h
-index 8a556a5..a9c742f 100644
+index 8a556a5..1c1efdd 100644
 --- a/ns-eel2-shim/ns-eel.h
 +++ b/ns-eel2-shim/ns-eel.h
 @@ -7,13 +7,21 @@
@@ -51,13 +64,14 @@ index 8a556a5..a9c742f 100644
  #endif
  
  /* Must be defined to the same value as PRJM_F_SIZE */
-@@ -41,6 +49,9 @@ void NSEEL_HOSTSTUB_LeaveMutex();
+@@ -41,6 +49,10 @@ void NSEEL_HOSTSTUB_LeaveMutex();
  void NSEEL_quit();
  
  NSEEL_VMCTX NSEEL_VM_alloc(); // return a context handle
 +/* Local extension; function and user data belong to this context only. */
 +int NSEEL_VM_register_function2(NSEEL_VMCTX ctx, const char* name,
 +                               EEL_F (*function)(void*, EEL_F, EEL_F), void* user);
++int NSEEL_VM_isfunction(NSEEL_VMCTX ctx, const char* name);
  void NSEEL_VM_free(NSEEL_VMCTX ctx); // free when done with a VM and ALL of its code have been freed, as well
  void NSEEL_VM_resetvars(NSEEL_VMCTX ctx); // clears all vars to 0.0.
  EEL_F *NSEEL_VM_regvar(NSEEL_VMCTX ctx, const char *name); // register a variable (before compilation)

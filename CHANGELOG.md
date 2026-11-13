@@ -7,6 +7,9 @@ lang: en-GB
 ## Release History
 ### Unreleased
 
+- Accept whitespace around INI assignment delimiters without copying `=` into imported expressions, while retaining legacy space-separated values.
+- Keep intrinsic calls distinct from same-named variables and lower extended variable identifiers for the projectM backend.
+- After expression compilation fails, remove empty top-level statements, isolated dots before signed numeric operands and recognised numeric suffixes; retain ambiguous or truncated formula errors.
 - Recover clear missing EEL statement separators after normal compilation fails, across preset, custom wave and shape expressions; retain ambiguous syntax errors and original preset files.
 - Add a bounded, cached `sound(first,last)` compatibility extension without reserving a variable named `sound`. Interpret the undocumented ranges as integrated FFT energy in 10-Hz coordinates; historical API and artistic parity remain unverified.
 - Recover malformed empty HLSL result selectors such as `GetPixel(uv).)` during compilation, retaining valid swizzles, comments and stored preset files; retry older automatic failure records after the compatibility update.

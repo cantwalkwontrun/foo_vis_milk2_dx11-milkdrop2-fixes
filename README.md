@@ -6,11 +6,11 @@ lang: en-GB
 
 Port of Winamp's MilkDrop 2 visualization library from its original DirectX 9 version to use DirectX 11.1.
 
-## DX11 x64 v0.2.1.68
+## DX11 x64 v0.2.1.69
 
 This software-only release snapshot excludes local profiles, diagnostic logs,
 configuration templates, preset collections and debug symbols. It contains
-the tested v68 source and the exact downstream expression-engine patch.
+the tested v69 source and the exact downstream expression-engine patch.
 The earlier repository history is intentionally not a parent of this snapshot.
 
 See `RELEASE.md` for validation and remaining limitations.

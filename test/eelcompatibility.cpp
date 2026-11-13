@@ -10,6 +10,29 @@ namespace MilkDrop2
 TEST_CLASS(EelCompatibilityTest)
 {
 public:
+    TEST_METHOD(RecoveryKeepsAmbiguousMathButAcceptsEmptyStatementsAndNumericTypos)
+    {
+        Assert::IsTrue(PresetEelCompat::RecoverLegacyExpressionSyntax(";\1;q1=.-2.5; q2=.+.25; q3=.99L;;") ==
+            "\1q1=-2.5; q2=+.25; q3=.99;");
+        for (const char* source : {"q1=time0.5;", "q1=(.5\1 2*sin(time));", "q1=if(x,", "q1=1+;", "q1=\".-2\";"})
+            Assert::IsTrue(PresetEelCompat::RecoverLegacyExpressionSyntax(source) == source);
+    }
+    TEST_METHOD(NumericRecoveryPreservesCommentsDecimalsAndIdentifiers)
+    {
+        const auto source = "q1=.5; // .-9\1q2=1e-3f; q3=9.0L; q4=1abc; q5=variableL;";
+        Assert::IsTrue(PresetEelCompat::RecoverLegacyExpressionSyntax(source) ==
+            "q1=.5; // .-9\1q2=1e-3; q3=9.0; q4=1abc; q5=variableL;");
+    }
+    TEST_METHOD(LegacyVariablesRemainDistinctFromIntrinsicCallsAndComments)
+    {
+        auto predicate = [](const char* name) { return PresetEelCompat::Syntax::Equal(name,"sin"); };
+        Assert::IsTrue(PresetEelCompat::RewriteLegacyVariables("sin=2;q1=SIN+sin(0); // sin\1q2=1;",predicate) ==
+            "__md2_legacy_var_73696e=2;q1=__md2_legacy_var_73696e+sin(0); // sin\1q2=1;");
+        Assert::IsTrue(PresetEelCompat::RewriteLegacyVariables("\xc3\xa9=3;q1=\xc3\xa9;",predicate) ==
+            "__md2_legacy_var_c3a9=3;q1=__md2_legacy_var_c3a9;");
+        for (const char* source : {"q1=sin /* call */ (0);", "q1=\"sin\";", "function sin(x)(x);q1=sin(0);"})
+            Assert::IsTrue(PresetEelCompat::RewriteLegacyVariables(source,predicate) == source);
+    }
     TEST_METHOD(RecoversOnlyClearTopLevelAssignmentBoundaries)
     {
         const auto result = PresetEelCompat::RecoverMissingStatementSeparators("zoom=(.7+x-.7)|(.7+y+.5)\1rot=.25;\1zoom=1;");

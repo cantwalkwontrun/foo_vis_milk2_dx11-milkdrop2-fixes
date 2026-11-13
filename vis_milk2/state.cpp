@@ -69,6 +69,9 @@ static NSEEL_CODEHANDLE CompilePresetExpression(NSEEL_VMCTX context, const char*
 {
     // The current EEL lexer cannot accept PRO's dotted mouse variable names.
     std::string code = PresetEelCompat::RewriteSoundCalls(PresetEelCompat::RewriteMouseIdentifiers(source));
+#ifndef NS_EEL2
+    code = PresetEelCompat::RewriteLegacyVariables(code, [context](const char* name) { return NSEEL_VM_isfunction(context, name) != 0; });
+#endif
     EEL_F* active = perFrame ? NSEEL_VM_regvar(context, PresetEelCompat::FrameWhileGuardActive) : nullptr;
     if (active) *active = 0;
     const auto bounded = PresetEelCompat::BoundWhileIterations(code, PresetEelCompat::WhileIterationBudget,
@@ -157,14 +160,23 @@ static bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMax
                 ch = fgetc(f);
                 if (pos < MAX_VARNAME_LEN - 3)
                     szThisLineVarName[pos++] = static_cast<char>(ch);
-            } while (ch != '\r' && ch != '\n' && ch != ' ' && ch != '=' && ch != EOF);
+            } while (ch != '\r' && ch != '\n' && ch != ' ' && ch != '\t' && ch != '=' && ch != EOF);
             if (ch == EOF)
                 break;
 
-            if (ch == '=' || ch == ' ')
+            if (ch == '=' || ch == ' ' || ch == '\t')
             {
                 szThisLineVarName[pos - 1] = 0; // replace '=' with a null char.
                 int bytepos = ftell(f);
+
+                // Accept both legacy "key value" and INI "key = value".
+                // A separating space previously left '=' inside expression text.
+                if (ch != '=')
+                {
+                    do { ch = fgetc(f); } while (ch == ' ' || ch == '\t');
+                    if (ch == '=') bytepos = ftell(f);
+                    else if (ch != EOF) fseek(f, -1, SEEK_CUR);
+                }
 
                 // Add an entry.
                 line_varName.push_back(szThisLineVarName);
@@ -1767,7 +1779,7 @@ void CState::StripLinefeedCharsAndComments(char* src, char* dest)
 NSEEL_CODEHANDLE CState::CompileExpressionWithRecovery(NSEEL_VMCTX context, char* original, const char* stripped, bool perFrame)
 {
     if (auto program = CompilePresetExpression(context, stripped, perFrame)) return program;
-    std::string recovered = PresetEelCompat::RecoverMissingStatementSeparators(original);
+    std::string recovered = PresetEelCompat::RecoverLegacyExpressionSyntax(original);
     if (recovered == original) return nullptr;
     std::vector<char> cleaned(recovered.size() + 1);
     StripLinefeedCharsAndComments(recovered.data(), cleaned.data());
